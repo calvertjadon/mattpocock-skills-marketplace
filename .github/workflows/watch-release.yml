@@ -1,0 +1,47 @@
+name: Watch mattpocock/skills releases
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch latest release tag
+        id: release
+        run: |
+          TAG="$(gh api repos/mattpocock/skills/releases/latest --jq '.tag_name')"
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Bump catalog if needed
+        run: |
+          TAG="${{ steps.release.outputs.tag }}"
+          VERSION="${TAG#v}"
+          FILE=".omp-plugin/marketplace.json"
+          CURRENT_REF="$(jq -r '.plugins[0].source.ref' "${FILE}")"
+
+          if [ "${CURRENT_REF}" = "${TAG}" ]; then
+            echo "Already at ${TAG}; nothing to do."
+            exit 0
+          fi
+
+          jq \
+            --arg version "${VERSION}" \
+            --arg ref "${TAG}" \
+            '.plugins[0].version = $version | .plugins[0].source.ref = $ref' \
+            "${FILE}" > "${FILE}.tmp" && mv "${FILE}.tmp" "${FILE}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${FILE}"
+          git commit -m "Bump mattpocock-skills to ${TAG}"
+          git push
