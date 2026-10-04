@@ -1,12 +1,18 @@
 {
   "name": "mattpocock-skills-marketplace",
-  "owner": { "name": "calvertjadon" },
+  "owner": {
+    "name": "calvertjadon"
+  },
   "plugins": [
     {
       "name": "mattpocock-skills",
       "description": "Matt Pocock's skills, release-tracked for omp",
-      "source": { "source": "github", "repo": "mattpocock/skills", "ref": "v1.2.3" },
-      "version": "1.2.3"
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills",
+        "ref": "v1.3.1"
+      },
+      "version": "1.3.1"
     }
   ]
 }
